@@ -1,0 +1,6 @@
+name = "quote-ai-worker"
+main = "src/index.js"
+compatibility_date = "2026-09-01"
+
+# ตั้ง secret ตอน deploy:  ANTHROPIC_API_KEY  (ห้าม commit ลง repo)
+# เปลี่ยนรุ่นได้ด้วย var MODEL ถ้าต้องการ (ค่าเริ่มต้น Haiku 4.5 ในโค้ด)
