@@ -115,6 +115,7 @@ export default {
     const tasks = (ctx.taskPresets || []).join(', ');
     const respP = (ctx.respPresets || []).map((r) => `${r.name} ${r.price}฿/หัว`).join(', ');
     const otherP = (ctx.otherPresets || []).map((r) => `${r.name} ${r.price}฿/หน่วย`).join(', ');
+    const examples = Array.isArray(ctx.examples) ? ctx.examples.slice(0, 5) : [];
 
     const sys = [
       'คุณเป็นผู้ช่วยตั้งราคางานวิจัยตลาด (market research) ของทีม Crowdabout',
@@ -124,8 +125,10 @@ export default {
       'ถ้าผู้ใช้ระบุตัวเลขชัด (เช่น quanti 400 คน, FGD 3 กลุ่ม) ให้ใช้ตามนั้น ถ้าไม่ระบุให้ประมาณอย่างสมเหตุสมผลตามสเกลงาน',
       positions ? `ตำแหน่งที่มี (ใช้ชื่อให้ตรง): ${positions}` : '',
       tasks ? `รายการงานตั้งต้นที่ใช้บ่อย (เลือกใช้/เพิ่มได้): ${tasks}` : '',
+      'ตั้งชื่อ resp.label / other.label ให้ตรงกับชื่อ preset ด้านล่างเมื่อเข้าข่าย (เช่น quanti, quali, transcription, interview) เพื่อให้ระบบดึงราคาให้อัตโนมัติ',
       respP ? `RD preset: ${respP}` : '',
       otherP ? `ค่าใช้จ่าย preset: ${otherP}` : '',
+      examples.length ? ('ตัวอย่าง quote ที่ทีมเคยทำจริง (เรียนรู้สไตล์ทีม — จำนวนวัน/ตำแหน่ง/RD ให้ใกล้เคียงของจริง อย่าลอกทั้งดุ้น ปรับตามสเกลงานใหม่):\n' + JSON.stringify(examples).slice(0, 4000)) : '',
       'อย่าเดาเกินจริง ถ้าไม่แน่ใจให้ใส่เฉพาะรายการที่มั่นใจ',
     ].filter(Boolean).join('\n');
 
