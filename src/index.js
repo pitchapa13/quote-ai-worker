@@ -35,61 +35,78 @@ function json(obj, status, extra) {
   });
 }
 
+const TASKS_SCHEMA = {
+  type: 'array',
+  description: 'รายการงาน (task) แต่ละงานระบุว่าตำแหน่งไหนใช้กี่วัน',
+  items: {
+    type: 'object',
+    properties: {
+      task: { type: 'string', description: 'ชื่องาน เช่น Landscape & research, Quanti, Analysis (ใช้ชื่อจากรายการงานตั้งต้นถ้าตรง)' },
+      assignments: {
+        type: 'array',
+        description: 'ตำแหน่งไหนทำงานนี้กี่วัน',
+        items: {
+          type: 'object',
+          properties: {
+            position: { type: 'string', description: 'ชื่อตำแหน่ง ให้ตรงกับรายการตำแหน่งที่ให้มา' },
+            days: { type: 'number', description: 'จำนวนวัน (manday) ของตำแหน่งนี้ในงานนี้' },
+          },
+          required: ['position', 'days'],
+        },
+      },
+    },
+    required: ['task', 'assignments'],
+  },
+};
+const RESP_SCHEMA = {
+  type: 'array',
+  description: 'ค่าตอบแทนผู้ตอบแบบสอบถาม/สัมภาษณ์ (RD)',
+  items: {
+    type: 'object',
+    properties: {
+      label: { type: 'string', description: 'ประเภท เช่น quanti, quali — ให้ตรง preset ถ้ามี' },
+      pricePerHead: { type: 'number', description: 'ราคาต่อหัว ถ้าตรง preset ไม่ต้องใส่ก็ได้' },
+      heads: { type: 'number', description: 'จำนวนหัว/คน' },
+    },
+    required: ['label', 'heads'],
+  },
+};
+const OTHER_SCHEMA = {
+  type: 'array',
+  description: 'ค่าใช้จ่ายอื่น / freelance',
+  items: {
+    type: 'object',
+    properties: {
+      label: { type: 'string' },
+      price: { type: 'number', description: 'ราคาต่อหน่วย' },
+      qty: { type: 'number', description: 'จำนวน ปกติ 1' },
+    },
+    required: ['label', 'price'],
+  },
+};
 const TOOL = {
   name: 'fill_quote',
-  description: 'แตกงานวิจัยตลาดเป็นตารางงาน (แต่ละงานใช้กี่วันต่อแต่ละตำแหน่ง) + ค่าตอบแทนผู้ตอบ (RD) + ค่าใช้จ่ายอื่น',
+  description: 'แตกงานวิจัยตลาดเป็นตารางงาน (แต่ละงานใช้กี่วันต่อแต่ละตำแหน่ง) + RD + ค่าใช้จ่ายอื่น รองรับหลายทางเลือก (options)',
   input_schema: {
     type: 'object',
     properties: {
-      tasks: {
+      options: {
         type: 'array',
-        description: 'รายการงาน (task) แต่ละงานระบุว่าตำแหน่งไหนใช้กี่วัน',
+        description: 'ใช้เมื่อโจทย์มีหลายทางเลือก/หลาย scope/หลาย tier — แต่ละ option มี name + tasks + resp + other ของตัวเอง (ถ้ามีทางเลือกเดียว อย่าใส่ options ให้ใช้ tasks/resp/other ตรงๆ)',
         items: {
           type: 'object',
           properties: {
-            task: { type: 'string', description: 'ชื่องาน เช่น Landscape & research, Quanti, Analysis (ใช้ชื่อจากรายการงานตั้งต้นถ้าตรง)' },
-            assignments: {
-              type: 'array',
-              description: 'ตำแหน่งไหนทำงานนี้กี่วัน',
-              items: {
-                type: 'object',
-                properties: {
-                  position: { type: 'string', description: 'ชื่อตำแหน่ง ให้ตรงกับรายการตำแหน่งที่ให้มา' },
-                  days: { type: 'number', description: 'จำนวนวัน (manday) ของตำแหน่งนี้ในงานนี้' },
-                },
-                required: ['position', 'days'],
-              },
-            },
+            name: { type: 'string', description: 'ชื่อทางเลือก เช่น Option A – Full scope, Option B – Lite' },
+            tasks: TASKS_SCHEMA,
+            resp: RESP_SCHEMA,
+            other: OTHER_SCHEMA,
           },
-          required: ['task', 'assignments'],
+          required: ['name', 'tasks'],
         },
       },
-      resp: {
-        type: 'array',
-        description: 'ค่าตอบแทนผู้ตอบแบบสอบถาม/สัมภาษณ์ (RD)',
-        items: {
-          type: 'object',
-          properties: {
-            label: { type: 'string', description: 'ประเภท เช่น quanti, quali — ให้ตรง preset ถ้ามี' },
-            pricePerHead: { type: 'number', description: 'ราคาต่อหัว ถ้าตรง preset ไม่ต้องใส่ก็ได้' },
-            heads: { type: 'number', description: 'จำนวนหัว/คน' },
-          },
-          required: ['label', 'heads'],
-        },
-      },
-      other: {
-        type: 'array',
-        description: 'ค่าใช้จ่ายอื่น / freelance',
-        items: {
-          type: 'object',
-          properties: {
-            label: { type: 'string' },
-            price: { type: 'number', description: 'ราคาต่อหน่วย' },
-            qty: { type: 'number', description: 'จำนวน ปกติ 1' },
-          },
-          required: ['label', 'price'],
-        },
-      },
+      tasks: TASKS_SCHEMA,
+      resp: RESP_SCHEMA,
+      other: OTHER_SCHEMA,
     },
     required: [],
   },
@@ -121,6 +138,7 @@ export default {
       'คุณเป็นผู้ช่วยตั้งราคางานวิจัยตลาด (market research) ของทีม Crowdabout',
       'ผู้ใช้จะอธิบายว่าจะทำงานวิจัยอะไร คุณต้องแตกงานออกเป็น "งาน (task)" หลายๆ งาน แล้วประเมินว่าแต่ละงานตำแหน่งไหนใช้กี่วัน (manday) — เรียกเครื่องมือ fill_quote เสมอ',
       'สำคัญ: ต้องระบุจำนวนวันของแต่ละตำแหน่งในแต่ละงานให้ครบ (assignments) ไม่ใช่แค่ยอดรวม',
+      'ถ้าโจทย์บอกว่ามีหลายทางเลือก (เช่น Option A/B, full vs lite, หลาย scope/แพ็กเกจ) ให้ตอบเป็น options[] แต่ละอันมี name + tasks + resp + other ของตัวเอง — ถ้ามีทางเลือกเดียว อย่าใส่ options ใช้ tasks/resp/other ตรงๆ',
       'ประเมินค่าตอบแทนผู้ตอบ (RD) และค่าใช้จ่ายอื่นด้วยถ้ามี',
       'ถ้าผู้ใช้ระบุตัวเลขชัด (เช่น quanti 400 คน, FGD 3 กลุ่ม) ให้ใช้ตามนั้น ถ้าไม่ระบุให้ประมาณอย่างสมเหตุสมผลตามสเกลงาน',
       positions ? `ตำแหน่งที่มี (ใช้ชื่อให้ตรง): ${positions}` : '',
@@ -164,6 +182,6 @@ export default {
     if (!tu) return json({ error: 'AI ไม่ได้ตอบเป็นรูปแบบที่ต้องการ' }, 502, h);
 
     const out = tu.input || {};
-    return json({ tasks: out.tasks || [], resp: out.resp || [], other: out.other || [] }, 200, h);
+    return json({ options: out.options || [], tasks: out.tasks || [], resp: out.resp || [], other: out.other || [] }, 200, h);
   },
 };
