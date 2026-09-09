@@ -118,6 +118,7 @@ export default {
     const h = corsHeaders(origin);
 
     if (req.method === 'OPTIONS') return new Response(null, { headers: h });
+    if (req.method === 'GET') return json({ ok: true, version: '2026-09-09-timeline-options', keySet: !!env.ANTHROPIC_API_KEY }, 200, h);
     if (req.method !== 'POST') return json({ error: 'POST only' }, 405, h);
     if (!env.ANTHROPIC_API_KEY) return json({ error: 'ยังไม่ได้ตั้ง ANTHROPIC_API_KEY ที่ Worker' }, 500, h);
 
